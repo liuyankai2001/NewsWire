@@ -44,6 +44,7 @@ async def get_news_detail(news_id:int=Query(..., alias="id"),db:AsyncSession = D
     views_response = await news.increase_news_views(db,news_id)
     if not views_response:
         raise HTTPException(status_code=404, detail="更新浏览量失败")
+    relation_news = await news.get_related_news(db,news_id,news_detail.id)
     return {
         "message":"success",
         "code":200,
@@ -56,6 +57,6 @@ async def get_news_detail(news_id:int=Query(..., alias="id"),db:AsyncSession = D
             "publishTime":news_detail.publish_time,
             "categoryId":news_detail.category_id,
             "views":news_detail.views,
-            "relationNews":[],
+            "relatedNews":relation_news,
         }
     }
