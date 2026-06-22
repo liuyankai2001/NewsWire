@@ -5,9 +5,12 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers import news
 from src.routers import users
-
+from src.utils.exception_handlers import register_exception_handlers
 
 app = FastAPI()
+
+# 注册异常处理器
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
