@@ -4,6 +4,8 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers import news
+from src.routers import users
+
 
 app = FastAPI()
 
@@ -17,7 +19,7 @@ app.add_middleware(
 
 app.include_router(news.router)
 
-
+app.include_router(users.router)
 
 
 if __name__ == "__main__":
