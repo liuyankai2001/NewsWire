@@ -4,8 +4,9 @@ from starlette import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.db_conf import get_database
-from src.schemas.users import UserRequest
+from src.schemas.users import UserRequest, UserAuthResponse, UserInfoResponse
 from src.crud import users
+from src.utils.response import success_response
 
 router = APIRouter(prefix="/api/user",tags=['users'])
 
@@ -21,17 +22,19 @@ async def register(user_data:UserRequest,db:AsyncSession=Depends(get_database),)
     user = await users.create_user(db,user_data)
     token = await users.create_token(db,user.id)
 
-    return {
-        "code":200,
-        "message":"注册成功",
-        "data":{
-            "token":token,
-            "userInfo":{
-                "id":user.id,
-                "username":user_data.username,
-                "bio":user.bio,
-                "avatar":user.avatar
-            }
-
-        }
-    }
+    # return {
+    #     "code":200,
+    #     "message":"注册成功",
+    #     "data":{
+    #         "token":token,
+    #         "userInfo":{
+    #             "id":user.id,
+    #             "username":user_data.username,
+    #             "bio":user.bio,
+    #             "avatar":user.avatar
+    #         }
+    #
+    #     }
+    # }
+    response_data = UserAuthResponse(token=token,userInfo=UserInfoResponse.model_validate(user))
+    return success_response(messagse="注册成功",data=response_data)
