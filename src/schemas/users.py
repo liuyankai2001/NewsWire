@@ -32,3 +32,10 @@ class UserAuthResponse(BaseModel):
         populate_by_name=True,  # alias / 字段名兼容
         from_attributes=True    # 允许从 orm 对象中取值
     )
+
+class UserUpdateRequestion(BaseModel):
+    nickname:str = None
+    avatar:str = None
+    gender:str = None
+    bio:str = None
+    phone:str = None
