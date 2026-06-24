@@ -69,3 +69,17 @@ async def update_user(db:AsyncSession,username:str,user_data:UserUpdateRequestio
         raise HTTPException(status_code=404,detail="用户不存在")
     updated_user = await get_user_by_username(db,username)
     return updated_user
+
+# 修改密码
+async def change_password(db:AsyncSession,user:User,old_password:str,new_password:str):
+    print(user.password)
+    print(security.get_hash_password(old_password))
+    if not security.verify_password(old_password,user.password):
+        return False
+    hashed_new_password = security.get_hash_password(new_password)
+    user.password=hashed_new_password
+    # 由sqlarchemy真正接管user对象，确保可以commit
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return True
