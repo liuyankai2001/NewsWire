@@ -40,7 +40,7 @@ async def register(user_data:UserRequest,db:AsyncSession=Depends(get_database),)
     #     }
     # }
     response_data = UserAuthResponse(token=token,userInfo=UserInfoResponse.model_validate(user))
-    return success_response(messagse="注册成功",data=response_data)
+    return success_response(message="注册成功", data=response_data)
 
 @router.post("/login")
 async def login(user_data:UserRequest,db:AsyncSession=Depends(get_database)):
@@ -55,7 +55,7 @@ async def login(user_data:UserRequest,db:AsyncSession=Depends(get_database)):
 # 查Token用户 -> 封装crud -》 功能整合成一个工具函数
 @router.get("/info")
 async def get_user_info(user:User=Depends(get_current_user)):
-    return success_response(messagse="获取用户信息成功",data=UserInfoResponse.model_validate(user))
+    return success_response(message="获取用户信息成功", data=UserInfoResponse.model_validate(user))
 
 @router.put("/update")
 async def update_user_info(user_data:UserUpdateRequestion,user:User=Depends(get_current_user),db:AsyncSession=Depends(get_database)):
