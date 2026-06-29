@@ -6,7 +6,7 @@ from src.config.db_conf import get_database
 from src.crud.favorite import add_news_favorite, remove_news_favorite
 
 from src.models.users import User
-from src.schemas.favorite import FavoriteCheckResponse, FavoriteAddRequest
+from src.schemas.favorite import FavoriteCheckResponse, FavoriteAddRequest, FavoriteResponse
 from src.utils.auth import get_current_user
 from src.utils.response import success_response
 from src.crud import favorite
@@ -51,5 +51,12 @@ async def get_favorite_list(
         user:User = Depends(get_current_user),
         db:AsyncSession = Depends(get_database)
 ):
-    result = await favorite.get_user_favorite_list(db,user.id)
-    return success_response(messagse="获取收藏列表成功",data=result)
+    rows,total = await favorite.get_favorite_list(db,user.id,page,page_size)
+    favorite_list = [{
+        **news.__dict__,
+        "favorite_time":favorite_time,
+        "favorite_id":favorite_id
+    } for news,favorite_time,favorite_id in rows]
+    has_more = total > page * page_size
+    data = FavoriteResponse(list=favorite_list,total=total,has_more=has_more)
+    return success_response(messagse="获取收藏列表成功",data=data)
