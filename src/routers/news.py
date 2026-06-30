@@ -23,7 +23,7 @@ async def get_news(
         db:AsyncSession = Depends(get_database)
 ):
     offset = (page-1)*page_size
-    news_list = await news.get_news_list(db,category_id,offset,page_size)
+    news_list = await news_cache.get_news_list(db,category_id,offset,page_size)
     total = await news.get_news_count(db,category_id)
     has_more = (offset+len(news_list)) < total
     return {

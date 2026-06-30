@@ -2,8 +2,10 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.cache.news_cache import get_cached_categories, set_cache_categories
+from src.cache.news_cache import get_cached_categories, set_cache_categories, get_cached_news_list, set_cache_news_list
 from src.models.news import CateGory,News
+from src.schemas.base import NewsItemBase
+
 
 async def get_categories(db:AsyncSession,skip:int=0,limit:int=100):
     cached_categories = await get_cached_categories()
@@ -20,10 +22,22 @@ async def get_categories(db:AsyncSession,skip:int=0,limit:int=100):
         await set_cache_categories(categories)
     return categories
 
+# 获取新闻列表
 async def get_news_list(db:AsyncSession,category_id:int,skip:int=0,limit=10):
+    # 先尝试从缓存获取列表
+    page = skip // limit + 1
+    cached_news_list = await get_cached_news_list(category_id, page, limit)
+    if cached_news_list:
+        return [News(**item) for item in cached_news_list]
+
     stmt = select(News).where(News.category_id==category_id).offset(skip).limit(limit)
     result = await db.execute(stmt)
-    return result.scalars().all()
+    news_list = result.scalars().all()
+    if news_list:
+        # 不用别名,因为redis数据是给后端用的
+        news_data = [NewsItemBase.model_validate(item).model_dump(mode='json',by_alias=False) for item in news_list]
+        await set_cache_news_list(category_id, page, limit, news_data)
+    return news_list
 
 async def get_news_count(db:AsyncSession,category_id:int):
     stmt = select(func.count(News.id)).where(News.category_id==category_id)
